@@ -105,10 +105,14 @@ def ppo(args):
         dtype = torch.float32
         lm = AutoModelForCausalLM.from_pretrained(args.model, torch_dtype=dtype)
         ref = AutoModelForCausalLM.from_pretrained(args.model, torch_dtype=torch.float16 if device == "cuda" else dtype)
-        lm.gradient_checkpointing_enable(); lm.config.use_cache = True
+        if device == "cuda":
+            lm.gradient_checkpointing_enable()
+        lm.config.use_cache = True
         df = pd.read_csv(args.data)
         conv = lambda d: [{"text": t, "gold": set(l.split("|"))} for t, l in zip(d.text, d.labels)]
         train, test = conv(df[df.split == "train"]), conv(df[df.split == "test"])
+        if args.n_test:
+            test = test[:args.n_test]
     tok.padding_side = "left"
     policy = PolicyWithValue(lm).to(device); ref.to(device).eval()
     for p in ref.parameters():
@@ -181,5 +185,6 @@ if __name__ == "__main__":
     ap.add_argument("--vf_coef", type=float, default=0.1); ap.add_argument("--gamma", type=float, default=1.0)
     ap.add_argument("--lam", type=float, default=0.95); ap.add_argument("--max_new", type=int, default=48)
     ap.add_argument("--eval_every", type=int, default=50); ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--n_test", type=int, default=0, help="evaluate on the first N test rows (0 = all 400)")
     ap.add_argument("--smoke", action="store_true")
     ppo(ap.parse_args())
