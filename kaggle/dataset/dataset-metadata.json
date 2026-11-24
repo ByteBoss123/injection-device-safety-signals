@@ -1,0 +1,8 @@
+{
+  "title": "FDA MAUDE Injection Device Adverse Events 2020-2026",
+  "id": "KAGGLE_USER/fda-maude-injection-device-events",
+  "licenses": [{"name": "CC0-1.0"}],
+  "subtitle": "39,480 openFDA adverse-event reports for syringes and pen injectors, plus recalls and 510(k)s",
+  "description": "Public openFDA data pulled Nov 24 2026 for product codes FMF, MEG, NSC, PQX and KZH (piston and antistick syringes, pen injectors, epinephrine syringes, syringe needle introducers).\n\n- maude_events.parquet: 39,480 MAUDE reports received 2020-01 to 2026-10 (narrative, event type, manufacturer, FDA product-problem codes)\n- recall.jsonl.gz: 332 device recalls\n- 510k.jsonl.gz: 964 510(k) records\n\nSource: U.S. FDA via openFDA (public domain). Code and results: https://github.com/ByteBoss123/injection-device-safety-signals",
+  "keywords": ["healthcare", "medicine", "nlp", "text classification"]
+}
