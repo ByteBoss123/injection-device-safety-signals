@@ -1,0 +1,10 @@
+__pycache__/
+.pytest_cache/
+*.joblib
+*.parquet
+.azenv
+.env
+node_modules/
+.next/
+data/
+out/
