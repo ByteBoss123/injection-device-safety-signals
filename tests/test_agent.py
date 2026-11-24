@@ -14,7 +14,7 @@ DOCS = [
 
 
 def final(obj):
-    return ChatResult(json.dumps(obj), [])
+    return ChatResult(json.dumps({"premise_issues": [], **obj}), [])
 
 
 def agent(script, **kw):

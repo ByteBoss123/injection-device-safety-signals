@@ -15,6 +15,9 @@ Rules:
 - Every factual claim must cite document ids exactly as returned (e.g. RECALL:Z-0123-2024, MDR:1234567-2025-00001).
   Counts from maude_stats are cited as STATS:maude.
 - If the evidence does not answer the question, say so (insufficient_evidence=true). Do not guess.
+- Check the question's premises against the records: if the question names a firm, product, year, id or population
+  (e.g. an animal species) that the retrieved records do not show, do not adopt it. List it in premise_issues and
+  say what the records actually show.
 - draft_safety_brief only creates a draft for human review; it is never sent automatically.
 - Use at most a few tool calls, then answer."""
 
@@ -45,9 +48,10 @@ TOOLS = [
 
 ANSWER_SCHEMA = {"name": "cited_answer", "strict": True, "schema": {
     "type": "object", "additionalProperties": False,
-    "required": ["answer", "claims", "insufficient_evidence"],
+    "required": ["answer", "claims", "insufficient_evidence", "premise_issues"],
     "properties": {
         "answer": {"type": "string"},
+        "premise_issues": {"type": "array", "items": {"type": "string"}},
         "insufficient_evidence": {"type": "boolean"},
         "claims": {"type": "array", "items": {"type": "object", "additionalProperties": False,
             "required": ["text", "citations"],
