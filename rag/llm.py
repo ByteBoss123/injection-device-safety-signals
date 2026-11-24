@@ -21,7 +21,8 @@ class ChatResult:
 def _azure_client():
     from openai import AzureOpenAI
     return AzureOpenAI(azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"], api_key=os.environ["AZURE_OPENAI_API_KEY"],
-                       api_version=os.environ.get("AZURE_OPENAI_API_VERSION", "2024-10-21"))
+                       api_version=os.environ.get("AZURE_OPENAI_API_VERSION", "2024-10-21"),
+                       max_retries=int(os.environ.get("AZURE_OPENAI_MAX_RETRIES", "8")))  # backs off on 429
 
 
 class AzureChat:

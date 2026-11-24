@@ -74,7 +74,7 @@ def main(golden_path, parquet, models, out_dir):
         row = score(it, run, llm); row["config"] = cfg; row["latency_s"] = lat
         return row
 
-    with ThreadPoolExecutor(8) as ex:
+    with ThreadPoolExecutor(4) as ex:
         rows = list(ex.map(one, jobs))
     df = pd.DataFrame(rows)
     df.to_json(f"{out_dir}/eval_rows.jsonl", orient="records", lines=True)

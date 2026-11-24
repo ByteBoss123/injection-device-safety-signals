@@ -35,11 +35,11 @@ def reason_groups(docs):
     return {i: g for g in by.values() for i in g}
 
 
-def recall_at(ret, qs, groups=None, ks=(1, 5, 10)):
+def recall_at(ret, qs, groups=None, ks=(1, 5, 10), filters=None):
     hits = {k: 0 for k in ks}; mrr = 0.0
     for q in qs:
         rel = groups.get(q["target"], {q["target"]}) if groups else {q["target"]}
-        ids = [h.id for h in ret.search(q["query"], k=max(ks))]
+        ids = [h.id for h in ret.search(q["query"], k=max(ks), filters=filters)]
         for k in ks:
             hits[k] += any(i in rel for i in ids[:k])
         first = next((n for n, i in enumerate(ids) if i in rel), None)
@@ -58,6 +58,7 @@ if __name__ == "__main__":
     res = {"n_queries": len(qs),
            "targets_with_duplicate_reason_text": sum(len(groups.get(q["target"], ())) > 1 for q in qs),
            "strict_single_id": {n: recall_at(r, qs) for n, r in rets.items()},
-           "same_reason_group": {n: recall_at(r, qs, groups) for n, r in rets.items()}}
+           "same_reason_group": {n: recall_at(r, qs, groups) for n, r in rets.items()},
+           "same_reason_group_recalls_only": {n: recall_at(r, qs, groups, filters={"type": "recall"}) for n, r in rets.items()}}
     json.dump(res, open(f"{out}/retrieval_eval.json", "w"), indent=1)
     print(json.dumps(res, indent=1))
