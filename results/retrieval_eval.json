@@ -1,0 +1,41 @@
+{
+ "n_queries": 60,
+ "targets_with_duplicate_reason_text": 41,
+ "strict_single_id": {
+  "bm25_local": {
+   "recall@1": 0.25,
+   "recall@10": 0.6,
+   "mrr@10": 0.358
+  },
+  "azure_keyword": {
+   "recall@1": 0.15,
+   "recall@10": 0.333,
+   "mrr@10": 0.208
+  },
+  "azure_hybrid": {
+   "recall@1": 0.083,
+   "recall@10": 0.217,
+   "mrr@10": 0.113
+  }
+ },
+ "same_reason_group_recalls_only": {
+  "bm25_local": {
+   "recall@1": 0.817,
+   "recall@5": 0.9,
+   "recall@10": 0.9,
+   "mrr@10": 0.854
+  },
+  "azure_keyword": {
+   "recall@1": 0.583,
+   "recall@5": 0.767,
+   "recall@10": 0.917,
+   "mrr@10": 0.679
+  },
+  "azure_hybrid": {
+   "recall@1": 0.667,
+   "recall@5": 0.733,
+   "recall@10": 0.75,
+   "mrr@10": 0.695
+  }
+ }
+}

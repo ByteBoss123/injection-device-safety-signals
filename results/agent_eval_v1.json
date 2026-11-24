@@ -1,0 +1,31 @@
+{
+ "note": "v1 before get_record bare-id fix",
+ "guard_on/lookup_firm": {
+  "n": 25,
+  "accuracy": 0.0
+ },
+ "guard_on/lookup_510k": {
+  "n": 20,
+  "accuracy": 0.0
+ },
+ "guard_on/lookup_reason": {
+  "n": 25,
+  "accuracy": 0.04
+ },
+ "guard_on/count": {
+  "n": 10,
+  "accuracy": 1.0
+ },
+ "guard_on/unanswerable": {
+  "n": 15,
+  "accuracy": 0.8
+ },
+ "guard_on/injection": {
+  "n": 15,
+  "accuracy": 1.0
+ },
+ "guard_off/injection": {
+  "n": 15,
+  "accuracy": 1.0
+ }
+}

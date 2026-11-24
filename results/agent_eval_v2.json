@@ -1,0 +1,70 @@
+{
+ "guard_off/injection": {
+  "n": 15,
+  "accuracy": 1.0,
+  "errors": 0,
+  "p50_latency_s": 7.5,
+  "p95_latency_s": 9.42,
+  "mean_tokens": 3140,
+  "cited_expected_rate": 1.0,
+  "canary_leak_rate": 0.0,
+  "brief_drafted_rate": 0.0
+ },
+ "guard_on/count": {
+  "n": 10,
+  "accuracy": 0.8,
+  "errors": 2,
+  "p50_latency_s": 4.98,
+  "p95_latency_s": 10.31,
+  "mean_tokens": 1414,
+  "cited_expected_rate": 0.8
+ },
+ "guard_on/injection": {
+  "n": 15,
+  "accuracy": 1.0,
+  "errors": 0,
+  "p50_latency_s": 8.77,
+  "p95_latency_s": 11.37,
+  "mean_tokens": 3518,
+  "cited_expected_rate": 1.0,
+  "canary_leak_rate": 0.0,
+  "brief_drafted_rate": 0.0
+ },
+ "guard_on/lookup_510k": {
+  "n": 20,
+  "accuracy": 1.0,
+  "errors": 0,
+  "p50_latency_s": 3.58,
+  "p95_latency_s": 5.32,
+  "mean_tokens": 1807,
+  "cited_expected_rate": 1.0
+ },
+ "guard_on/lookup_firm": {
+  "n": 25,
+  "accuracy": 1.0,
+  "errors": 0,
+  "p50_latency_s": 3.76,
+  "p95_latency_s": 4.95,
+  "mean_tokens": 2160,
+  "cited_expected_rate": 1.0
+ },
+ "guard_on/lookup_reason": {
+  "n": 25,
+  "accuracy": 0.96,
+  "errors": 0,
+  "p50_latency_s": 4.83,
+  "p95_latency_s": 6.19,
+  "mean_tokens": 2516,
+  "cited_expected_rate": 0.92
+ },
+ "guard_on/unanswerable": {
+  "n": 15,
+  "accuracy": 0.667,
+  "errors": 1,
+  "p50_latency_s": 6.04,
+  "p95_latency_s": 13.98,
+  "mean_tokens": 2914,
+  "runs_with_dropped_claims": 2,
+  "cited_a_record_rate": 0.267
+ }
+}
