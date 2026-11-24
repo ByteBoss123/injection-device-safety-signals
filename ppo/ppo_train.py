@@ -62,8 +62,11 @@ def token_logprobs(logits, ids):
 @torch.no_grad()
 def generate(policy, tok, prompts, max_new, device, greedy=False):
     enc = tok(prompts, return_tensors="pt", padding=True, truncation=True, max_length=384).to(device)
-    out = policy.lm.generate(**enc, max_new_tokens=max_new, do_sample=not greedy, temperature=1.0, top_k=0, top_p=1.0,
-                             pad_token_id=tok.pad_token_id)
+    # Sample from the raw softmax: no top-k/top-p/repetition penalty, so the behavior policy is exactly
+    # the distribution PPO scores (model generation_config defaults would otherwise apply).
+    kw = dict(do_sample=True, temperature=1.0, top_k=0, top_p=1.0) if not greedy else dict(do_sample=False)
+    out = policy.lm.generate(**enc, max_new_tokens=max_new, repetition_penalty=1.0, pad_token_id=tok.pad_token_id,
+                             **kw)
     P = enc.input_ids.shape[1]
     resp = out[:, P:]
     texts = tok.batch_decode(resp, skip_special_tokens=True)
