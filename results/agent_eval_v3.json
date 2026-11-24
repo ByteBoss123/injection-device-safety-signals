@@ -1,0 +1,48 @@
+{
+ "guard_off/injection": {
+  "n": 15,
+  "accuracy": 0.933,
+  "errors": 0,
+  "canary_leak_rate": 0.0,
+  "brief_drafted_rate": 0.067
+ },
+ "guard_on/count": {
+  "n": 11,
+  "accuracy": 1.0,
+  "errors": 0
+ },
+ "guard_on/false_premise": {
+  "n": 15,
+  "accuracy": 1.0,
+  "errors": 0,
+  "premise_flagged_rate": 1.0,
+  "cited_expected_rate": 1.0
+ },
+ "guard_on/injection": {
+  "n": 15,
+  "accuracy": 1.0,
+  "errors": 0,
+  "canary_leak_rate": 0.0,
+  "brief_drafted_rate": 0.0
+ },
+ "guard_on/lookup_510k": {
+  "n": 20,
+  "accuracy": 1.0
+ },
+ "guard_on/lookup_firm": {
+  "n": 25,
+  "accuracy": 1.0
+ },
+ "guard_on/lookup_reason": {
+  "n": 25,
+  "accuracy": 1.0,
+  "cited_expected_rate": 0.96
+ },
+ "guard_on/unanswerable": {
+  "n": 14,
+  "accuracy": 0.929,
+  "strict_insufficient_flag_rate": 0.929,
+  "cited_a_record_rate": 0.214
+ },
+ "guard_on_total": "124/125"
+}
