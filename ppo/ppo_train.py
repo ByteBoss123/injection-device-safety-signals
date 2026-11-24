@@ -45,8 +45,13 @@ class PolicyWithValue(nn.Module):
         nn.init.zeros_(self.v.weight); nn.init.zeros_(self.v.bias)
 
     def forward(self, ids, mask):
-        out = self.lm(input_ids=ids, attention_mask=mask, output_hidden_states=True)
+        out = self.lm(input_ids=ids, attention_mask=mask, position_ids=positions(mask), output_hidden_states=True)
         return out.logits, self.v(out.hidden_states[-1].float()).squeeze(-1)
+
+
+def positions(mask):
+    """Position ids that skip left padding, matching what generate() uses."""
+    return (mask.long().cumsum(-1) - 1).clamp(min=0)
 
 
 def token_logprobs(logits, ids):
@@ -128,7 +133,7 @@ def ppo(args):
         with torch.no_grad():
             logits, values = policy(ids, mask)
             old_lp = token_logprobs(logits, ids)
-            ref_lp = token_logprobs(ref(input_ids=ids, attention_mask=mask).logits, ids)
+            ref_lp = token_logprobs(ref(input_ids=ids, attention_mask=mask, position_ids=positions(mask)).logits, ids)
         rmask = mask[:, 1:].float().clone(); rmask[:, :P - 1] = 0  # response tokens only
         vals = values[:, :-1] * rmask
         kl = (old_lp - ref_lp) * rmask
@@ -145,12 +150,14 @@ def ppo(args):
         n = rmask.sum().clamp(min=1)
         mu = (adv * rmask).sum() / n; sd = (((adv - mu) ** 2 * rmask).sum() / n).sqrt()
         adv = (adv - mu) / (sd + 1e-8) * rmask
-        policy.train(); stats = []
+        policy.train(); stats = []; first_dev = None
         for _ in range(args.ppo_epochs):
             for mb in torch.randperm(len(batch)).split(args.mb):
                 lg, v = policy(ids[mb], mask[mb])
                 lp = token_logprobs(lg, ids[mb]); m = rmask[mb]; mn = m.sum().clamp(min=1)
                 ratio = torch.exp(lp - old_lp[mb])
+                if first_dev is None:  # before any update this must be ~0, else old/new logprobs disagree
+                    first_dev = (((ratio - 1).abs() * m).max()).item()
                 pg = torch.max(-adv[mb] * ratio, -adv[mb] * ratio.clamp(1 - args.clip, 1 + args.clip))
                 v = v[:, :-1]; vc = vals[mb] + (v - vals[mb]).clamp(-args.clip_v, args.clip_v)
                 vl = 0.5 * torch.max((v - ret[mb]) ** 2, (vc - ret[mb]) ** 2)
@@ -161,7 +168,8 @@ def ppo(args):
         s = {"step": step, "reward": round(R.mean().item(), 4), "kl": round((kl.sum(1)).mean().item(), 4),
              "valid_json": round(sum(parse(t) is not None for t in texts) / len(texts), 3),
              "loss": round(sum(x["loss"] for x in stats) / len(stats), 4),
-             "clipfrac": round(sum(x["clipfrac"] for x in stats) / len(stats), 4), "sec": round(time.time() - t0, 1)}
+             "clipfrac": round(sum(x["clipfrac"] for x in stats) / len(stats), 4),
+             "first_mb_max_ratio_dev": round(first_dev, 6), "sec": round(time.time() - t0, 1)}
         log["steps"].append(s); print(s, flush=True)
         if args.eval_every and (step + 1) % args.eval_every == 0 and step + 1 < args.steps:
             log.setdefault("mid", []).append({"step": step + 1, **evaluate(policy, tok, test, device, max_new=args.max_new)})
