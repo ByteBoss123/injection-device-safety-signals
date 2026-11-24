@@ -26,7 +26,7 @@ TOOLS = [
             "doc_type": {"type": "string", "enum": ["recall", "510k", "mdr", ""]},
             "product_code": {"type": "string", "description": "FDA product code, e.g. FMF, MEG, NSC, PQX, KZH"},
             "k": {"type": "integer", "minimum": 1, "maximum": 10}}, "required": ["query"]}}},
-    {"type": "function", "function": {"name": "get_record", "description": "Fetch one record by id.",
+    {"type": "function", "function": {"name": "get_record", "description": "Fetch one record by id, e.g. RECALL:Z-0123-2024, 510K:K123456 or MDR:<report_number>. Bare ids like Z-0123-2024 also work.",
         "parameters": {"type": "object", "properties": {"id": {"type": "string"}}, "required": ["id"]}}},
     {"type": "function", "function": {"name": "maude_stats",
         "description": "Count MAUDE reports (2020-2026) by year, optionally filtered by product code, manufacturer substring and failure mode.",
@@ -88,8 +88,14 @@ class SafetyAgent:
             flt = {"type": args.get("doc_type") or None, "product_code": args.get("product_code") or None}
             return self._docs_payload(run, self.retriever.search(args["query"], k=int(args.get("k") or 6), filters=flt))
         if name == "get_record":
-            h = self.retriever.get(args["id"])
-            return self._docs_payload(run, [h]) if h else {"error": f"no record {args['id']}"}
+            rid = args["id"].strip()
+            cands = [rid] if ":" in rid else [f"RECALL:{rid}", f"510K:{rid}", f"MDR:{rid}"]
+            for c in cands:
+                h = self.retriever.get(c)
+                if h:
+                    return self._docs_payload(run, [h])
+            return {"error": f"no record {rid}", "hint": "ids look like RECALL:Z-0123-2024, 510K:K123456, MDR:<report_number>; "
+                                                       "try search_fda_records if unsure"}
         if name == "maude_stats":
             if not self.stats_fn:
                 return {"error": "stats unavailable"}
