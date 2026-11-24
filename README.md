@@ -7,7 +7,7 @@ Safety analytics and a cited AI agent over real FDA data for injection drug-deli
 2. **Agent**: tool-using RAG agent on **Azure AI Search** (hybrid keyword + vector) and **Azure OpenAI** (gpt-4.1-mini, text-embedding-3-small) with structured outputs, function calling, citation validation, prompt-injection redaction and a human-approval gate. FastAPI backend, Next.js/TypeScript UI.
 3. **Evals**: 110-question golden set built from real records, a planted prompt-injection suite with guard on/off ablation, and a retrieval benchmark.
 4. **Lakehouse**: Microsoft Fabric notebook (bronze/silver/gold Delta tables).
-5. **PPO**: minimal PPO trainer (value head, KL to a frozen reference, clipped objective) for labeling narratives with a small LM.
+5. **PPO**: from-scratch PPO fine-tuning of Qwen2.5-0.5B to label narratives as structured JSON (valid JSON 49% to 88.5%).
 
 ## Data (public openFDA, pulled Nov 24 2026)
 
@@ -91,12 +91,27 @@ manufacturer x failure-mode counts, detector alerts). Verified with local Spark 
 39,480 bronze rows = 39,480 silver events (no loss or duplication), 5,963 gold rows, 332 recalls. **Not yet run inside a
 Fabric workspace.**
 
-## 5. PPO
+## 5. PPO fine-tuning
 
-`ppo/ppo_train.py` implements PPO from scratch: generate, terminal reward (F1 vs FDA labels, -0.5 for invalid JSON),
-per-token KL penalty, GAE, clipped policy and value losses. A CPU smoke test passes on a tiny random model. **The GPU run
-(Qwen2.5-0.5B-Instruct on Kaggle T4, data from `ppo/export_data.py`: 4,000 train / 400 test narratives) has not been run yet,
-so there are no PPO results.**
+`ppo/ppo_train.py` implements PPO from scratch: sampling, a terminal reward (F1 against FDA-coded failure modes, -0.5 for
+invalid JSON), a per-token KL penalty to a frozen reference, GAE, and clipped policy and value losses. Run on Qwen2.5-0.5B-Instruct
+for 60 steps (batch 16) on a 32-vCPU AWS CPU instance (no GPU quota was available), evaluated greedily on 200 held-out
+2025-26 reports:
+
+| | Valid JSON | Mean label F1 |
+|---|---|---|
+| Base model | 49.0% | 0.107 |
+| Step 20 | 96.0% | 0.133 |
+| Step 40 | 80.5% | 0.122 |
+| Step 60 (final) | **88.5%** | **0.119** |
+
+PPO mostly taught the model the output format. Label accuracy barely moved and is far below the TF-IDF classifier
+(0.712 micro-F1), so this is a demonstration of the training loop, not a better classifier. The best checkpoint (step 20) was not saved.
+
+Two bugs found on the way and fixed before the reported run: (1) scoring forwards did not pass left-padding-aware position
+ids; after the fix the pre-update ratio deviation logged on every step is exactly 0. (2) Run 1 sampled with the model's
+default repetition penalty, so the behavior policy differed from the policy PPO scored; it diverged within 2 steps
+(KL 3.3, 0% valid JSON). Run 2 samples from the raw softmax with lr 5e-7 and KL coefficient 0.2, set before the run.
 
 ## Run it
 

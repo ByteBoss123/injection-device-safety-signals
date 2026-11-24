@@ -1,0 +1,26 @@
+{
+ "model": "Qwen/Qwen2.5-0.5B-Instruct",
+ "hardware": "AWS c7i.8xlarge (CPU only, 32 vCPU)",
+ "steps": 60,
+ "batch": 16,
+ "lr": 5e-07,
+ "kl_coef": 0.2,
+ "n_test": 200,
+ "before": {
+  "mean_f1": 0.1074,
+  "valid_json": 0.49
+ },
+ "step20": {
+  "mean_f1": 0.1325,
+  "valid_json": 0.96
+ },
+ "step40": {
+  "mean_f1": 0.1217,
+  "valid_json": 0.805
+ },
+ "after": {
+  "mean_f1": 0.1192,
+  "valid_json": 0.885
+ },
+ "run1_note": "run 1 (lr 1e-6, kl 0.05) diverged: KL 3.3 and 0% valid JSON by step 2; sampling used the model's default repetition penalty, so the behavior policy differed from the policy PPO scored. Fixed before run 2."
+}
