@@ -89,7 +89,7 @@ def ppo(args):
     if args.smoke:
         from transformers import GPT2Config, GPT2LMHeadModel, PreTrainedTokenizerFast
         from tokenizers import Tokenizer, models, pre_tokenizers
-        vocab = {c: i for i, c in enumerate(["<pad>"] + list("abcdefghijklmnopqrstuvwxyz_{}[]\":, .0123456789JSONRA:\n"))}
+        vocab = {c: i for i, c in enumerate(["<pad>"] + sorted(set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_{}[]\":,. ()0123456789\n-")))}
         tk = Tokenizer(models.WordLevel(vocab, unk_token="<pad>")); tk.pre_tokenizer = pre_tokenizers.Split("", "isolated")
         tok = PreTrainedTokenizerFast(tokenizer_object=tk, pad_token="<pad>", eos_token="<pad>")
         mk = lambda: GPT2LMHeadModel(GPT2Config(vocab_size=len(vocab), n_positions=512, n_embd=32, n_layer=2, n_head=2))
