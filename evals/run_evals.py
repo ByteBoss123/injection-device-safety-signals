@@ -60,17 +60,22 @@ def main(golden_path, parquet, models, out_dir):
     llm = AzureChat()
     ret = AzureSearchRetriever(embedder=embedder(dimensions=256))
     stats, clf = make_stats_fn(parquet), make_classify_fn(models)
-    rows = []
+    from concurrent.futures import ThreadPoolExecutor
+    jobs = []
     for cfg, guard_on, sets in [("guard_on", True, None), ("guard_off", False, {"injection"})]:
         agent = SafetyAgent(llm, ret, stats, clf, trace_path=f"{out_dir}/traces_{cfg}.jsonl", guard_enabled=guard_on)
-        for it in items:
-            if sets and it["set"] not in sets:
-                continue
-            t0 = time.time()
-            run = agent.run(it["q"])
-            row = score(it, run, llm); row["config"] = cfg; row["latency_s"] = round(time.time() - t0, 2)
-            rows.append(row)
-            print(cfg, it["set"], row.get("correct"), row["latency_s"], flush=True)
+        jobs += [(cfg, agent, it) for it in items if not sets or it["set"] in sets]
+
+    def one(job):
+        cfg, agent, it = job
+        t0 = time.time()
+        run = agent.run(it["q"])
+        lat = round(time.time() - t0, 2)  # agent latency only, judge call excluded
+        row = score(it, run, llm); row["config"] = cfg; row["latency_s"] = lat
+        return row
+
+    with ThreadPoolExecutor(8) as ex:
+        rows = list(ex.map(one, jobs))
     df = pd.DataFrame(rows)
     df.to_json(f"{out_dir}/eval_rows.jsonl", orient="records", lines=True)
     summ = {}
