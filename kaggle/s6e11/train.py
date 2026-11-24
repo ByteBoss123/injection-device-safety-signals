@@ -22,6 +22,11 @@ for c in X.columns:
 X["amt_to_balance"] = X.amount_usd / (X.account_balance_usd.abs() + 1)
 for c in cats:
     X[c + "_freq"] = X[c].map(X[c].value_counts(normalize=True)).astype(float)
+import os
+if os.environ.get("V2"):  # v2: frequency of every numeric value (synthetic Playground data repeats generator values)
+    for c in [c for c in tr.columns if c != "id" and c not in cats and tr[c].dtype != bool]:
+        X[c + "_cnt"] = X[c].map(X[c].value_counts()).astype(float)
+        X[c + "_cat"] = X[c].astype(str).astype("category")
 Xtr, Xte = X.iloc[: len(tr)], X.iloc[len(tr):]
 
 skf = StratifiedKFold(5, shuffle=True, random_state=42)
