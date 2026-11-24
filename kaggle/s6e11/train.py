@@ -12,7 +12,7 @@ tr, te = pd.read_csv(f"{D}/train.csv"), pd.read_csv(f"{D}/test.csv")
 y = tr.pop("is_fraud").astype(int).values
 ids = te["id"].values
 X = pd.concat([tr, te]).drop(columns="id").reset_index(drop=True)
-cats = [c for c in X.columns if X[c].dtype == object or str(X[c].dtype).startswith("string")]
+cats = list(X.select_dtypes(exclude=["number", "bool"]).columns)
 for c in cats:
     X[c] = X[c].astype("category")
 for c in X.columns:
